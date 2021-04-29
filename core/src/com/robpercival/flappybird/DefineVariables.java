@@ -11,7 +11,7 @@ import com.badlogic.gdx.math.Rectangle;
 
 import java.util.Random;
 
-public class DefineVariables{
+public class DefineVariables{//une Classe pour apppelle de variable pour que le code d execution soit plus compreencible
 
     DefineVariables(FlappyBird obj) {
         this.obj = obj;
@@ -68,7 +68,7 @@ public class DefineVariables{
 
     }
 
-    public void startGame() {
+    public void startGame() {//la methode quelle comence le jeux
 
         obj.birdY = Gdx.graphics.getHeight() / 2 - obj.oiseauxs [0].getHeight() / 2;
 
@@ -88,3 +88,5 @@ public class DefineVariables{
 
 
 }
+//posibilite a faire publie le jeux sur Play Market pour povoir y accedex sur telephone et le tellecharge
+//Problemes,Les telehone avec un petit ecran sont pas adapte
