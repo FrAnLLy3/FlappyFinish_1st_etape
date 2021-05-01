@@ -1,5 +1,5 @@
 package com.robpercival.flappybird;
-
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -11,8 +11,11 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.TimeUtils;
 
+import java.awt.Menu;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -20,9 +23,12 @@ import java.util.concurrent.TimeUnit;
 public class FlappyBird extends ApplicationAdapter  { //La bibliothèque GDX est créée pour la programmation de jeux adaptatifs et basés sur des preuves pour Android et iOS.
 	DefineVariables nosVariableAppele = new DefineVariables(this);
 
+
+
+	Vector2 mousePosition;
 	//ShapeRenderer shapeRenderer;
 	SpriteBatch batch;
-	Texture background,name,gameover,taptoPlay,topTube,bottomTube,endBordScreen; //Appelle de Class Texture
+	Texture beeObstacle,positionInversefonsee,background,name,gameover,taptoPlay,topTube,bottomTube,endBordScreen,positionNormale,positionIversee; //Appelle de Class Texture
 	Texture[] oiseauxs;
 	Texture[] medals;
 
@@ -31,7 +37,7 @@ public class FlappyBird extends ApplicationAdapter  { //La bibliothèque GDX est
 	int flapState = 0;
 	float birdY = 0;
 	float velocity = 0;
-	Circle birdCircle;
+	Circle birdCircle,beeCircle,beeCircleMoving;
 	int score = 0;
 	int scoringTube = 0;
 	BitmapFont font,bestScore;
@@ -40,27 +46,37 @@ public class FlappyBird extends ApplicationAdapter  { //La bibliothèque GDX est
 	float gravity = 2;
 
 
+
 	float gap = 800;
 	float maxTubeOffset;
 	Random generateurRandomme;
 	float tubeVelocity = 9;
 	int numeroDesTubes = 4;
+
 	float[] tubeX = new float[numeroDesTubes];
 	float[] tubeOffset = new float[numeroDesTubes];
 	float distanceBetweenTubes;
 	Rectangle[] topTubeRectangles;
 	Rectangle[] bottomTubeRectangles;
+	Rectangle[] lesMenuesInversee;
+
 
 	@Override
 	public void create(){
 		nosVariableAppele.create();
+
+
 	}
 	//methode main n est pas utilise car la methode begin() nous affecte un boucle qui se repete pendant le jeux
+
 	@Override
 	public void render () {
 
 		batch.begin();
+        lesMenuesInversee[1]= new Rectangle((Gdx.graphics.getWidth() / 2)-name.getWidth() * 2 /1 /2-20,Gdx.graphics.getHeight()/4,positionNormale.getWidth()*5/4,positionNormale.getHeight());
+		lesMenuesInversee[0]= new Rectangle((Gdx.graphics.getWidth() / 2)-name.getWidth() * 2 /1 /2-20+positionNormale.getWidth()*5/4,Gdx.graphics.getHeight()/4,positionNormale.getWidth()*5/4,positionNormale.getHeight());
 		batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());//notre fond d'ecran
+		int track = Gdx.input.getX();
 
 
 
@@ -81,8 +97,11 @@ public class FlappyBird extends ApplicationAdapter  { //La bibliothèque GDX est
 				velocity = -30;
 			}
 			for (int i = 0; i < numeroDesTubes; i++) {//generateur des tubes
+
+
 				if (tubeX[i] < - topTube.getWidth()) {
 					tubeX[i] += numeroDesTubes * distanceBetweenTubes;
+
 					tubeOffset[i] = (generateurRandomme.nextFloat() - 0.5f) * (Gdx.graphics.getHeight() - gap - 200);
 				} else tubeX[i] = tubeX[i] - tubeVelocity;
 
@@ -94,6 +113,20 @@ public class FlappyBird extends ApplicationAdapter  { //La bibliothèque GDX est
 
 				topTubeRectangles[i] = new Rectangle(tubeX[i], Gdx.graphics.getHeight() / 2 + gap / 2 + tubeOffset[i], topTube.getWidth(), topTube.getHeight());
 				bottomTubeRectangles[i] = new Rectangle(tubeX[i], Gdx.graphics.getHeight() / 2 - gap / 2 - bottomTube.getHeight() + tubeOffset[i], bottomTube.getWidth(), bottomTube.getHeight());
+
+
+				batch.draw(beeObstacle,tubeX[i],500,200,200);
+				batch.draw(beeObstacle,tubeX[i],tubeX[i]+distanceBetweenTubes,200,200);
+
+
+
+
+
+
+				beeCircleMoving.set(tubeX[i]+100,tubeX[i]+100+distanceBetweenTubes, 20);
+				beeCircle.set(tubeX[i]+100,500+100, 10);//Pour calculer le radius on fait 200/2
+				if((Intersector.overlaps(birdCircle,beeCircle))||(Intersector.overlaps(birdCircle,beeCircleMoving))) jeuxStatus = 2;//Expresion de besoin 2
+
 			}
 
 			if (birdY > 0) {//SE ropere a la position de oisiaux et dans un sens de gravite vers le bas
@@ -109,14 +142,18 @@ public class FlappyBird extends ApplicationAdapter  { //La bibliothèque GDX est
 
 		} else if (jeuxStatus  == 0) {//debut de jeux
 			//les dessin suplementer comme nom touche
+
+
 			batch.draw(name,(Gdx.graphics.getWidth()/2)-name.getWidth()*2,Gdx.graphics.getHeight()/2+(name.getHeight()*4),name.getWidth()*4,name.getHeight()*4);
 			batch.draw(taptoPlay,(Gdx.graphics.getWidth() / 2)-name.getWidth() * 2 /1 /2-20,Gdx.graphics.getHeight()/2-(name.getHeight()*4)-200,taptoPlay.getWidth()*4,taptoPlay.getHeight()*4);
+           	batch.draw(positionNormale,(Gdx.graphics.getWidth() / 2)-name.getWidth() * 2 /1 /2-20,Gdx.graphics.getHeight()/4,positionNormale.getWidth()*5/4,positionIversee.getHeight()*5/4);
+			batch.draw(positionIversee,(Gdx.graphics.getWidth() / 2)-name.getWidth() * 2 /1 /2-20+positionNormale.getWidth()*5/4,Gdx.graphics.getHeight()/4,positionNormale.getWidth()*5/4,positionIversee.getHeight()*5/4);
+			//Gdx.app.log("НУ заработало",String.valueOf(track));
+
+			nosVariableAppele.versionInversee();
 
 			if (Gdx.input.justTouched()) {
-
 				jeuxStatus  = 1;
-
-
 			}
 
 		} else if (jeuxStatus == 2) {//arret de jeux
@@ -163,14 +200,18 @@ public class FlappyBird extends ApplicationAdapter  { //La bibliothèque GDX est
 
 
 
+
+
 		//shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);//des visualisation des hitBOX
-		//shapeRenderer.setColor(Color.RED);
+	//shapeRenderer.setColor(Color.RED);
+		//shapeRenderer.rect((Gdx.graphics.getWidth() / 2)-name.getWidth() * 2 /1 /2-20+positionNormale.getWidth()*5/4,Gdx.graphics.getHeight()/4,positionNormale.getWidth()*5/4,positionNormale.getHeight());;
 		//shapeRenderer.circle(birdCircle.x, birdCircle.y, birdCircle.radius);
 
 		for (int i = 0; i < numeroDesTubes; i++) {//le senseur
 
 			//shapeRenderer.rect(tubeX[i], Gdx.graphics.getHeight() / 2 + gap / 2 + tubeOffset[i], topTube.getWidth(), topTube.getHeight());
 			//shapeRenderer.rect(tubeX[i], Gdx.graphics.getHeight() / 2 - gap / 2 - bottomTube.getHeight() + tubeOffset[i], bottomTube.getWidth(), bottomTube.getHeight());
+
 
 
 			if (Intersector.overlaps(birdCircle, topTubeRectangles[i]) || Intersector.overlaps(birdCircle, bottomTubeRectangles[i])) {//attrape le fait quand l'oiseaux a touche la tube
